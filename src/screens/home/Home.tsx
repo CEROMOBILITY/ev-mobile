@@ -82,29 +82,35 @@ export default class Home extends BaseScreen<Props, State> {
         // Get the Transactions
         const transactions = await this.centralServerProvider.getTransactionsActive({
           UserID: this.userID,
-        }, Constants.ONLY_ONE_PAGING);
+        }, Constants.ONLY_ONE_RECORD);
         // User has only one transaction?
         if (transactions.count === 1) {
           navigation.navigate(
-            'ChargingStationConnectorDetailsTabs', {
-            params: {
-              chargingStationID: transactions.result[0].chargeBoxID,
-              connectorID: transactions.result[0].connectorId
-            },
-            key: `${Utils.randomNumber()}`
-          }
+            'TransactionInProgressNavigator',
+            {
+              screen: 'ChargingStationConnectorDetailsTabs',
+              params: {
+                params: {
+                  chargingStationID: transactions.result[0].chargeBoxID,
+                  connectorID: transactions.result[0].connectorId
+                }
+              },
+              key: `${Utils.randomNumber()}`
+            }
           );
         } else {
-          navigation.navigate('TransactionInProgressNavigator', {
+          navigation.navigate('TransactionInProgressNavigator',
+            {
+              screen: 'TransactionsInProgress',
+              key: `${Utils.randomNumber()}`
+            });
+        }
+      } else {
+        navigation.navigate('TransactionInProgressNavigator',
+          {
             screen: 'TransactionsInProgress',
             key: `${Utils.randomNumber()}`
           });
-        }
-      } else {
-        navigation.navigate('TransactionInProgressNavigator', {
-          screen: 'TransactionsInProgress',
-          key: `${Utils.randomNumber()}`
-        });
       }
     } catch (error) {
       // Other common Error

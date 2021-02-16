@@ -55,13 +55,14 @@ export default class ChargingStationQrCode extends BaseScreen<State, Props> {
     // Navigate to login
     this.props.navigation.dispatch(
       StackActions.replace(
-        'AuthNavigator', {
-        name: 'Login',
-        params: {
-          tenantSubDomain: tenant.subdomain,
-        },
-        key: `${Utils.randomNumber()}`,
-      }
+        'AuthNavigator',
+        {
+          name: 'Login',
+          params: {
+            tenantSubDomain: tenant.subdomain,
+          },
+          key: `${Utils.randomNumber()}`,
+        }
       ),
     );
   }
@@ -89,10 +90,10 @@ export default class ChargingStationQrCode extends BaseScreen<State, Props> {
       const chargingStationQrCode = JSON.parse(decodedQrCodeData) as ChargingStationQRCode;
       // Check mandatory props
       if (!chargingStationQrCode.tenantSubDomain ||
-        !chargingStationQrCode.tenantName ||
-        !chargingStationQrCode.endpoint ||
-        !chargingStationQrCode.chargingStationID ||
-        !chargingStationQrCode.connectorID) {
+          !chargingStationQrCode.tenantName ||
+          !chargingStationQrCode.endpoint ||
+          !chargingStationQrCode.chargingStationID ||
+          !chargingStationQrCode.connectorID) {
         Message.showError(I18n.t('qrCode.invalidQRCode'));
         return;
       }

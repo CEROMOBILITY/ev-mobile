@@ -2,7 +2,7 @@ import { DrawerActions } from '@react-navigation/native';
 import I18n from 'i18n-js';
 import { Container, Icon, Spinner, Text, Thumbnail, View } from 'native-base';
 import React from 'react';
-import { Alert, Image, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
+import { Alert, Image, ImageStyle, RefreshControl, ScrollView, TouchableOpacity } from 'react-native';
 
 import { default as noPhoto, default as noPhotoActive } from '../../../../assets/no-photo.png';
 import noSite from '../../../../assets/no-site.png';
@@ -72,9 +72,6 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
       buttonDisabled: true,
       refreshing: false
     };
-    console.log('ChargingStationConnectorDetails ====================================');
-    console.log(this.props.route);
-    console.log('====================================');
   }
 
   public setState = (state: State | ((prevState: Readonly<State>, props: Readonly<Props>) => State | Pick<State, never>) | Pick<State, never>, callback?: () => void) => {
@@ -83,9 +80,9 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
 
   public async componentDidMount() {
     await super.componentDidMount();
-    const startTransaction = Utils.getParamFromNavigation(this.props.route, 'startTransaction', null) as boolean;
+    const startTransaction = Utils.getParamFromNavigation(this.props.route, 'startTransaction', null, true) as boolean;
     if (startTransaction) {
-      this.startTransaction();
+      this.startTransactionConfirm();
     }
   }
 
@@ -168,10 +165,11 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
     if (transaction) {
       // Navigate
       navigation.navigate(
-        'TransactionDetailsTabs', {
-        params: { transactionID: transaction.id },
-        key: `${Utils.randomNumber()}`
-      }
+        'TransactionDetailsTabs',
+        {
+          params: { transactionID: transaction.id },
+          key: `${Utils.randomNumber()}`
+        }
       );
     } else {
       Alert.alert(I18n.t('chargers.noSession'), I18n.t('chargers.noSessionMessage'));
@@ -185,13 +183,14 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
     // Get the last session
     // Navigate
     navigation.navigate(
-      'ReportError', {
-      params: {
-        chargingStationID,
-        connectorID,
-      },
-      key: `${Utils.randomNumber()}`
-    }
+      'ReportError',
+      {
+        params: {
+          chargingStationID,
+          connectorID,
+        },
+        key: `${Utils.randomNumber()}`
+      }
     );
   }
 
@@ -301,6 +300,12 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
       const userInfo = this.centralServerProvider.getUserInfo();
       if (!userInfo.tagIDs || userInfo.tagIDs.length === 0) {
         Message.showError(I18n.t('details.noBadgeID'));
+        return;
+      }
+      // Check already charging
+      if (connector.status !== ChargePointStatus.AVAILABLE &&
+          connector.status !== ChargePointStatus.PREPARING) {
+        Message.showError(I18n.t('transactions.connectorNotAvailable'));
         return;
       }
       // Disable the button
@@ -445,11 +450,10 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
   };
 
   public renderConnectorStatus = (style: any) => {
-    const { connector, isAdmin, isSiteAdmin } = this.state;
+    const { chargingStation, connector, isAdmin, isSiteAdmin } = this.state;
     return (
       <View style={style.columnContainer}>
-        <ConnectorStatusComponent navigation={this.props.navigation} connector={connector}
-          text={connector ? Utils.translateConnectorStatus(connector.status) : ChargePointStatus.UNAVAILABLE} />
+        <ConnectorStatusComponent navigation={this.props.navigation} connector={connector} inactive={chargingStation?.inactive} />
         {(isAdmin || isSiteAdmin) && connector && connector.status === ChargePointStatus.FAULTED && (
           <Text style={[style.subLabel, style.subLabelStatusError]}>({connector.errorCode})</Text>
         )}
@@ -485,7 +489,7 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
       <View style={style.columnContainer}>
         <Icon type='FontAwesome' name='money' style={[style.icon, style.info]} />
         <Text style={[style.label, style.labelValue, style.info]}>{price}</Text>
-        <Text style={[style.subLabel, style.info]}>({transaction.priceUnit})</Text>
+        <Text style={[style.subLabel, style.info]}>({transaction.stop ? transaction.stop.priceUnit : transaction.priceUnit})</Text>
       </View>
     ) : (
         <View style={style.columnContainer}>
@@ -681,15 +685,15 @@ export default class ChargingStationConnectorDetails extends BaseAutoRefreshScre
           <Container style={style.container}>
             <HeaderComponent
               navigation={this.props.navigation}
-              title={chargingStation ? chargingStation.id : I18n.t('connector.unknown')}
-              subTitle={`(${I18n.t('details.connector')} ${connectorLetter})`}
+              title={chargingStation ? chargingStation.id : '-'}
+              subTitle={connectorLetter ? `(${I18n.t('details.connector')} ${connectorLetter})` : ''}
               leftAction={() => this.onBack()}
               leftActionIcon={'navigate-before'}
               rightAction={() => { navigation.dispatch(DrawerActions.openDrawer()); return true }}
               rightActionIcon={'menu'}
             />
             {/* Site Image */}
-            <Image style={style.backgroundImage} source={siteImage ? { uri: siteImage } : noSite} />
+            <Image style={style.backgroundImage as ImageStyle} source={siteImage ? { uri: siteImage } : noSite} />
             {/* Show Last Transaction */}
             {this.renderShowLastTransactionButton(style)}
             {/* Report Error */}

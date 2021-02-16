@@ -3,8 +3,8 @@ import PagingParams from '../types/PagingParams';
 export default class Constants {
   public static readonly REST_RESPONSE_SUCCESS = 'Success';
 
-  public static readonly SUPPORTED_LOCALES = ['en_US', 'fr_FR', 'de_DE', 'es_MX', 'pt_PT'];
-  public static readonly SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es', 'pt'];
+  public static readonly SUPPORTED_LOCALES = ['en_US', 'fr_FR', 'de_DE', 'es_MX', 'pt_PT', 'it_IT'];
+  public static readonly SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es', 'pt', 'it'];
   public static readonly DEFAULT_LOCALE = 'en_US';
   public static readonly DEFAULT_LANGUAGE = 'en';
 
@@ -33,11 +33,11 @@ export default class Constants {
     limit: Constants.PAGING_SIZE,
     skip: 0,
   };
-  public static readonly ONLY_ONE_PAGING: PagingParams = {
+  public static readonly ONLY_ONE_RECORD: PagingParams = {
     limit: 1,
     skip: 0,
   };
-  public static readonly ONLY_RECORD_COUNT_PAGING: PagingParams = {
+  public static readonly ONLY_RECORD_COUNT: PagingParams = {
     limit: 1,
     skip: 0,
     onlyRecordCount: true

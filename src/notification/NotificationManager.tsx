@@ -82,9 +82,11 @@ export default class NotificationManager {
           case UserNotificationType.END_OF_SESSION:
           case UserNotificationType.SESSION_STARTED:
             break;
-          // Force display notif
+          // Display notif
           default:
-            await firebase.notifications().displayNotification(notification);
+            if (Object.values(UserNotificationType).includes(notification.data.notificationType as UserNotificationType)) {
+              await firebase.notifications().displayNotification(notification);
+            }
             break;
         }
       } else {
@@ -147,11 +149,15 @@ export default class NotificationManager {
 
   private async processOpenedNotification(notificationOpen: NotificationOpen): Promise<boolean> {
     let connectionIsValid = true;
+    // Not valid
+    if (!notificationOpen?.notification?.data) {
+      return true;
+    }
     // Get information about the notification that was opened
     const notification: Notification = notificationOpen.notification;
     // User must be logged and Navigation available
-    if (!this.navigator) {
-      // Process it later
+    if (!this.navigator || !this.centralServerProvider) {
+      // Process later
       this.lastNotification = notificationOpen;
       return false;
     }
@@ -185,6 +191,7 @@ export default class NotificationManager {
         } catch (error) {
           // Cannot login
           Message.showError(I18n.t('general.mustLoggedToTenant', { tenantName: tenant.name }));
+          return false;
         }
       } else {
         // Cannot login
@@ -198,7 +205,8 @@ export default class NotificationManager {
       case UserNotificationType.END_OF_SESSION:
         this.navigator.dispatch(
           StackActions.replace(
-            'AppDrawerNavigator', {
+            'AppDrawerNavigator',
+            {
               screen: 'TransactionHistoryNavigator',
               initial: false,
               params: {
@@ -220,7 +228,8 @@ export default class NotificationManager {
       case UserNotificationType.OPTIMAL_CHARGE_REACHED:
         this.navigator.dispatch(
           StackActions.replace(
-            'AppDrawerNavigator', {
+            'AppDrawerNavigator',
+            {
               screen: 'TransactionInProgressNavigator',
               initial: false,
               params: {
@@ -241,7 +250,8 @@ export default class NotificationManager {
       case UserNotificationType.PREPARING_SESSION_NOT_STARTED:
         this.navigator.dispatch(
           StackActions.replace(
-            'AppDrawerNavigator', {
+            'AppDrawerNavigator',
+            {
               screen: 'ChargingStationsNavigator',
               initial: false,
               params: {
@@ -263,7 +273,8 @@ export default class NotificationManager {
       case UserNotificationType.CHARGING_STATION_REGISTERED:
         this.navigator.dispatch(
           StackActions.replace(
-            'AppDrawerNavigator', {
+            'AppDrawerNavigator',
+            {
               screen: 'ChargingStationsNavigator',
               initial: false,
               params: {
@@ -284,7 +295,8 @@ export default class NotificationManager {
       case UserNotificationType.OFFLINE_CHARGING_STATION:
         this.navigator.dispatch(
           StackActions.replace(
-            'AppDrawerNavigator', {
+            'AppDrawerNavigator',
+            {
               screen: 'ChargingStationsNavigator',
               initial: false,
               key: `${Utils.randomNumber()}`,

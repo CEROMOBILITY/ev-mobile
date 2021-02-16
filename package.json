@@ -1,6 +1,9 @@
 {
   "name": "eMobility",
   "version": "1.2.4",
+  "engines": {
+    "npm": "6.x.x"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/LucasBrazi06/ev-mobile.git"
@@ -72,6 +75,7 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.10",
+    "@react-native-community/picker": "^1.8.1",
     "@react-native-community/toolbar-android": "0.1.0-rc.2",
     "@react-navigation/drawer": "^5.11.4",
     "@react-navigation/material-bottom-tabs": "^5.3.10",
@@ -126,8 +130,8 @@
     "react-native-svg": "^12.1.0",
     "react-native-swipe-list-view": "^3.2.5",
     "react-native-vector-icons": "^7.1.0",
-    "react-native-webview": "^10.10.2",
-    "rn-secure-storage": "^2.0.6",
+    "react-native-webview": "^11.0.2",
+    "rn-secure-storage": "^2.0.7",
     "tslib": "^2.0.3",
     "validate.js": "^0.13.1"
   },

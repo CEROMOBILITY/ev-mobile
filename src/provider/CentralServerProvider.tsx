@@ -1,13 +1,13 @@
 import { Buffer } from 'buffer'
 
-import { NavigationContainerRef } from '@react-navigation/native';
+import { NavigationContainerRef, StackActions } from '@react-navigation/native';
 import { AxiosInstance } from 'axios';
 import jwtDecode from 'jwt-decode';
 import NotificationManager from 'notification/NotificationManager';
 import { KeyValue } from 'types/Global';
 
-import I18nManager from '../I18n/I18nManager';
 import Configuration from '../config/Configuration';
+import I18nManager from '../I18n/I18nManager';
 import { ActionResponse } from '../types/ActionResponse';
 import ChargingStation from '../types/ChargingStation';
 import { DataResult, TransactionDataResult } from '../types/DataResult';
@@ -122,12 +122,9 @@ export default class CentralServerProvider {
 
   public async getTenants(): Promise<TenantConnection[]> {
     // Get the tenants from the storage first
-    let tenants = await SecuredStorage.getTenants();
+    const tenants = await SecuredStorage.getTenants();
     if (!tenants) {
-      // Get initial tenants
-      tenants = this.getInitialTenants();
-      // Save them
-      await SecuredStorage.saveTenants(tenants);
+      return []
     }
     return tenants.sort((tenant1: TenantConnection, tenant2: TenantConnection) => {
       if (tenant1.name < tenant2.name) {
@@ -138,13 +135,6 @@ export default class CentralServerProvider {
       }
       return 0;
     });
-  }
-
-  public getInitialTenants(): TenantConnection[] {
-    if (__DEV__) {
-      return Utils.cloneObject(Configuration.DEFAULT_TENANTS_LIST_QA) as TenantConnection[];
-    }
-    return Utils.cloneObject(Configuration.DEFAULT_TENANTS_LIST_PROD) as TenantConnection[];
   }
 
   public async getTenantLogoBySubdomain(tenant: TenantConnection): Promise<string> {
@@ -174,7 +164,7 @@ export default class CentralServerProvider {
   }
 
   public async triggerAutoLogin(
-    navigation: NavigationContainerRef, fctRefresh: any) {
+    navigation: NavigationContainerRef, fctRefresh: () => void) {
     this.debugMethod('triggerAutoLogin');
     try {
       // Force log the user
@@ -185,10 +175,19 @@ export default class CentralServerProvider {
       }
     } catch (error) {
       // Ko: Logoff
+      this.setAutoLoginDisabled(true);
       await this.logoff();
       // Go to login page
       if (navigation) {
-        navigation.navigate('AuthNavigator', { key: `${Utils.randomNumber()}` });
+        navigation.dispatch(
+          StackActions.replace(
+            'AuthNavigator',
+            {
+              name: 'Login',
+              key: `${Utils.randomNumber()}`,
+            }
+          ),
+        );
       }
     }
   }
@@ -283,7 +282,9 @@ export default class CentralServerProvider {
   public async logoff() {
     this.debugMethod('logoff');
     // Clear the token and tenant
-    await SecuredStorage.clearUserToken(this.tenant.subdomain);
+    if (this.tenant) {
+      await SecuredStorage.clearUserToken(this.tenant.subdomain);
+    }
     // Clear local data
     this.token = null;
     this.decodedToken = null;

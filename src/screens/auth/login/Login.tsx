@@ -102,6 +102,16 @@ export default class Login extends BaseScreen<Props, State> {
     let tenantLogo: string;
     // Get tenants
     this.tenants = await this.centralServerProvider.getTenants();
+    if (Utils.isEmptyArray(this.tenants)) {
+      Alert.alert(
+        I18n.t('authentication.noTenantFoundTitle'),
+        I18n.t('authentication.noTenantFoundMessage'),
+        [
+          {text: I18n.t('general.yes') , onPress:() => { this.goToTenants(true) }},
+          {text: I18n.t('general.no'), style: 'cancel' }
+        ]
+      );
+    }
     // Check if sub-domain is provided
     if (!this.state.tenantSubDomain) {
       // Not provided: display latest saved credentials
@@ -140,27 +150,46 @@ export default class Login extends BaseScreen<Props, State> {
 
   public async componentDidFocus() {
     super.componentDidFocus();
+    const tenantSubDomain = Utils.getParamFromNavigation(this.props.route, 'tenantSubDomain', this.state.tenantSubDomain )
     // Check if current Tenant selection is still valid (handle delete tenant usee case)
-    if (this.state.tenantSubDomain) {
+    if (tenantSubDomain) {
       // Get the current Tenant
-      const tenant = await this.centralServerProvider.getTenant(this.state.tenantSubDomain);
+      const tenant = await this.centralServerProvider.getTenant(tenantSubDomain.toString());
       if (!tenant) {
         // Refresh
         this.tenants = await this.centralServerProvider.getTenants();
         this.setState({
           tenantSubDomain: null,
           tenantName: I18n.t('authentication.tenant'),
+          email: null,
+          password: null
+        });
+      } else {
+        this.setState({
+          tenantSubDomain,
+          tenantName: tenant.name
         });
       }
     }
   }
 
+  private goToTenants(openQRCode = false) {
+    this.props.navigation.navigate(
+      'Tenants',
+      {
+        key: `${Utils.randomNumber()}`,
+        openQRCode
+      }
+    )
+
+  }
+
   public async checkAutoLogin(tenant: TenantConnection, email: string, password: string) {
     // Check if user can be logged
     if (!this.centralServerProvider.hasAutoLoginDisabled() &&
-      !Utils.isNullOrEmptyString(tenant?.subdomain) &&
-      !Utils.isNullOrEmptyString(email) &&
-      !Utils.isNullOrEmptyString(password)) {
+        !Utils.isNullOrEmptyString(tenant?.subdomain) &&
+        !Utils.isNullOrEmptyString(email) &&
+        !Utils.isNullOrEmptyString(password)) {
       try {
         // Check EULA
         const result = await this.centralServerProvider.checkEndUserLicenseAgreement(
@@ -278,12 +307,13 @@ export default class Login extends BaseScreen<Props, State> {
     // Tenant selected?
     if (this.state.tenantSubDomain) {
       navigation.navigate(
-        'SignUp', {
-        params: {
-          tenantSubDomain: this.state.tenantSubDomain,
-          email: this.state.email
+        'SignUp',
+        {
+          params: {
+            tenantSubDomain: this.state.tenantSubDomain,
+            email: this.state.email
+          }
         }
-      }
       );
     } else {
       Message.showError(I18n.t('authentication.mustSelectTenant'));
@@ -295,12 +325,13 @@ export default class Login extends BaseScreen<Props, State> {
     // Tenant selected?
     if (this.state.tenantSubDomain) {
       navigation.navigate(
-        'RetrievePassword', {
-        params: {
-          tenantSubDomain: this.state.tenantSubDomain,
-          email: this.state.email
-        }
-      });
+        'RetrievePassword',
+        {
+          params: {
+            tenantSubDomain: this.state.tenantSubDomain,
+            email: this.state.email
+          }
+        });
     } else {
       // Error
       Message.showError(I18n.t('authentication.mustSelectTenant'));
@@ -324,7 +355,7 @@ export default class Login extends BaseScreen<Props, State> {
     const navigation = this.props.navigation;
     const { tenantLogo, eula, loading, initialLoading, hidePassword } = this.state;
     // Render
-    return initialLoading ? (
+    return  initialLoading ? (
       <Spinner style={formStyle.spinner} color='grey' />
     ) : (
         <View style={style.container}>
@@ -335,12 +366,7 @@ export default class Login extends BaseScreen<Props, State> {
                 <Text style={style.linksTextButton} uppercase={false}>{I18n.t('authentication.newUser')}</Text>
               </Button>
               <Form style={formStyle.form}>
-                <Button block={true} style={formStyle.button} onPress={() =>
-                  navigation.navigate(
-                    'Tenants', {
-                    key: `${Utils.randomNumber()}`
-                  }
-                  )}
+                <Button block={true} style={formStyle.button} onPress={ () => this.goToTenants() }
                 >
                   <Text style={formStyle.buttonText} uppercase={false}>{this.state.tenantName}</Text>
                 </Button>
