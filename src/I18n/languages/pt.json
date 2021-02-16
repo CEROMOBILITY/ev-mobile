@@ -35,7 +35,9 @@
     "restoreTenants": "Restaurar Organização",
     "restoreTenantsConfirm": "Voce quer mesmo restaurar a lista inicial de organização?",
     "restoreTenantsSuccess": "Organization list has been restored",
-    "createTenantSuccess": "New tenant '{{tenantName}}' has been created",
+    "createTenantSuccess": "New tenant '{{tenantName}}' has been registered",
+    "registerToNewTenantTitle": "Sign up",
+    "registerToNewTenant": "Do you want to sign up in the new organization '{{tenantName}}'?",
     "noRecordFound": "Nenhum registo encontrado",
     "day": "d",
     "hour": "h",
@@ -50,7 +52,7 @@
     "tenantUnknown": "Unknown organization '{{tenantSubdomain}}'",
     "mustLoggedToTenant": "You must be logged to organization '{{tenantName}}'",
     "tenantMissing": "The organization is missing",
-    "tenantExists": "A Organização já existe",
+    "tenantExists": "A Organização '{{tenantName}}' já existe",
     "createdOn": "Creado em",
     "createdBy": "Creado por",
     "lastChangedOn": "Ultima mudnaça efetuada em",
@@ -69,7 +71,9 @@
     "statistics": "Estatísticas",
     "reportError": "Comunicar erro"
   },
-	"authentication": {
+  "authentication": {
+    "noTenantFoundTitle" : "No organization found",
+    "noTenantFoundMessage" : "Do you want to register a new organization using a QR-Code?",
     "tenantTitle": "Organização",
     "mandatoryTenantSubDomain": "O subdominio da organização é obrigatório",
     "mandatoryTenantName": "O nome da organização é obrigatório",
@@ -121,6 +125,7 @@
     "password": "Password",
     "repeatPassword": "Repita a password",
     "signUp": "Inscreva-se",
+    "signIn": "Sign In",
     "passwordRule": "Deve conter 1 letra minúscula e maúscula, 1 numero, 1 caracter especial e um minimo de 8 caracteres",
     "passwordNotMatch": "Password não coincide",
     "tenant": "Organização",
@@ -129,7 +134,7 @@
     "tenantSubdomain": "Subdominio",
     "tenantName": "Nome",
     "tenantEndpoint": "Cloud",
-    "phone" : "Telefone",
+    "phone": "Telefone",
     "mandatoryPhone": "O número de telefone é obrigatório",
     "mandatoryErrorTitle": "O título é obrigatório",
     "mandatoryErrorSubject": "O assunto é obrigatório",
@@ -174,6 +179,7 @@
     "transactionStatsUnexpectedError": "Não posso ler as estatísticas",
     "transactionStartUnexpectedError": "Não posso iniciar sessão",
     "carNotConnectedError": "Your car is not connected to the charging station",
+    "connectorNotAvailable": "This charging station's connector is not available",
     "transactionStopUnexpectedError": "Não posso parar a sessão"
   },
   "home": {
